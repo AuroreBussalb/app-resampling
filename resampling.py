@@ -276,7 +276,7 @@ def main():
         config['param_events'] = None  # when App is run on Bl, no value for this parameter corresponds to '' 
             
     # Keep bad channels in memory
-    bad_channels = raw.info['bads']
+    bad_channels = data.info['bads']
 
     # Define kwargs
     # Delete keys values in config.json when this app is executed on Brainlife
