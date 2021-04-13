@@ -1,5 +1,6 @@
 {
-    "fif": "/network/lustre/iss01/home/aurore.bussalb/Repositories/app-maxfilter/out_dir_maxfilter/meg.fif",
+    "fif": "/network/lustre/iss01/home/aurore.bussalb/Repositories/app-bad-channels/out_dir_bad_channels/meg.fif",
+	"events": "/network/lustre/iss01/home/aurore.bussalb/Repositories/app-create-events/out_dir_create_events/events.tsv",
 	"param_epoched_data": false,
 	"param_sfreq": 512,
 	"param_npad": "auto",
