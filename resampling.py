@@ -8,7 +8,7 @@ import shutil
 
 
 def resampling(data, param_epoched_data, param_sfreq, param_npad, param_window,
-               param_stim_picks, param_n_jobs, param_events, param_pad):
+               param_stim_picks, param_n_jobs, param_events, param_raw_pad, param_epoch_pad):
     """Resample the signals using MNE Python and save the file once resampled.
 
     Parameters
@@ -57,8 +57,8 @@ def resampling(data, param_epoched_data, param_sfreq, param_npad, param_window,
     else:
 
         # Resample data
-        data_resampled = data.resample(sfreq=param_resample_sfreq, npad=param_resample_npad, 
-                                       window=param_resample_window, n_jobs=param_resample_n_jobs, 
+        data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, 
+                                       window=param_window, n_jobs=param_n_jobs, 
                                        pad=param_epoch_pad)
 
     # Save file
