@@ -264,7 +264,7 @@ def main():
                                                                       f'and then downsample.'})
     
     # Comment about resampling
-    comments_resample_freq = f'{config["param_resample_sfreq"]}Hz'
+    comments_resample_freq = f'{config["param_sfreq"]}Hz'
 
     # Check for None parameters
 
