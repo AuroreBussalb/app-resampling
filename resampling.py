@@ -257,7 +257,7 @@ def main():
     # Info message about resampling if applied
     if config['param_epoched_data'] is False:
         dict_json_product['brainlife'].append({'type': 'info', 'msg': f'Data was resampled at '
-                                                                      f'{config["param_resample_sfreq"]}. '
+                                                                      f'{config["param_sfreq"]}. '
                                                                       f'Please bear in mind that it is generally '
                                                                       f'recommended not to epoch '
                                                                       f'downsampled data, but instead epoch '
@@ -269,11 +269,11 @@ def main():
     # Check for None parameters
 
     # stim picks
-    if config['param_resample_stim_picks'] == "":
-        config['param_resample_stim_picks'] = None  # when App is run on Bl, no value for this parameter corresponds to ''  
+    if config['param_stim_picks'] == "":
+        config['param_stim_picks'] = None  # when App is run on Bl, no value for this parameter corresponds to ''  
 
-    if config['param_resample_events'] == "":
-        config['param_resample_events'] = None  # when App is run on Bl, no value for this parameter corresponds to '' 
+    if config['param_events'] == "":
+        config['param_events'] = None  # when App is run on Bl, no value for this parameter corresponds to '' 
             
     # Keep bad channels in memory
     bad_channels = raw.info['bads']
