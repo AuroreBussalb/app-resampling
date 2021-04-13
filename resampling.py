@@ -8,7 +8,7 @@ import shutil
 
 
 def resampling(data, param_epoched_data, param_sfreq, param_npad, param_window,
-               param_stim_picks, param_n_jobs, param_events, param_raw_pad, param_epoch_pad):
+               param_stim_picks, param_n_jobs, param_events, param_pad):
     """Resample the signals using MNE Python and save the file once resampled.
 
     Parameters
@@ -29,12 +29,9 @@ def resampling(data, param_epoched_data, param_sfreq, param_npad, param_window,
         Number of jobs to run in parallel.
     param_events: 2D array, shape (n_events, 3) or None
         An optional event matrix. 
-    param_raw_pad: str
-        The type of padding to use for raw data. Supports all numpy.pad() mode options. Can also be 
-        “reflect_limited” (default).
-    param_epoch_pad: str
-        The type of padding to use for epoched data. Supports all numpy.pad() mode options. Can also be 
-        “reflect_limited” or "edge" (default).
+    param_pad: str
+        The type of padding to use. Supports all numpy.pad() mode options. Can also be 
+        “reflect_limited” (default for raw data) and "edge" (default for epoched data).
 
     Returns
     -------
@@ -51,7 +48,7 @@ def resampling(data, param_epoched_data, param_sfreq, param_npad, param_window,
         # Resample data
         data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
                                        stim_picks=param_stim_picks, n_jobs=param_n_jobs,
-                                       events=param_events, pad=param_raw_pad)
+                                       events=param_events, pad=param_pad)
 
     # For epoched data 
     else:
@@ -59,7 +56,7 @@ def resampling(data, param_epoched_data, param_sfreq, param_npad, param_window,
         # Resample data
         data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, 
                                        window=param_window, n_jobs=param_n_jobs, 
-                                       pad=param_epoch_pad)
+                                       pad=param_pad)
 
     # Save file
     data_resampled .save("out_dir_resampling/meg.fif", overwrite=True)
