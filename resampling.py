@@ -51,7 +51,7 @@ def resampling(data, param_epoched_data, param_sfreq, param_npad, param_window,
         # Resample data
         data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
                                        stim_picks=param_stim_picks, n_jobs=param_n_jobs,
-                                       events=param_events, pad=param_pad)
+                                       events=param_events, pad=param_raw_pad)
 
     # For epoched data 
     else:
@@ -59,7 +59,7 @@ def resampling(data, param_epoched_data, param_sfreq, param_npad, param_window,
         # Resample data
         data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, 
                                        window=param_window, n_jobs=param_n_jobs, 
-                                       pad=param_pad)
+                                       pad=param_epoched_pad)
 
     # Save file
     data_resampled .save("out_dir_resampling/meg.fif", overwrite=True)
