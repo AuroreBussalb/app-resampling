@@ -8,7 +8,7 @@ import shutil
 
 
 def resampling(data, param_epoched_data, param_sfreq, param_npad, param_window,
-               param_stim_picks, param_n_jobs, param_events, param_pad):
+               param_stim_picks, param_n_jobs, param_events, param_raw_pad, param_epoch_pad):
     """Resample the signals using MNE Python and save the file once resampled.
 
     Parameters
@@ -29,9 +29,12 @@ def resampling(data, param_epoched_data, param_sfreq, param_npad, param_window,
         Number of jobs to run in parallel.
     param_events: 2D array, shape (n_events, 3) or None
         An optional event matrix. 
-    param_pad: str
-        The type of padding to use. Supports all numpy.pad() mode options. Can also be 
-        “reflect_limited” (default for raw data) and "edge" (default for epoched data).
+    param_raw_pad: str
+        The type of padding to use for raw data. Supports all numpy.pad() mode options. Can also be 
+        “reflect_limited” (default) and "edge".
+    param_epoch_pad: str
+        The type of padding to use for epoched data. Supports all numpy.pad() mode options. Can also be 
+        “reflect_limited” and "edge" (default).
 
     Returns
     -------
@@ -246,6 +249,26 @@ def main():
     else:
         data = mne.read_epochs(data_file)
 
+    # Read the crosstalk file
+    cross_talk_file = config.pop('crosstalk')
+    if os.path.exists(cross_talk_file) is True:
+        shutil.copy2(cross_talk_file, 'out_dir_resampling/crosstalk_meg.fif')  # required to run a pipeline on BL
+
+    # Read the calibration file
+    calibration_file = config.pop('calibration')
+    if os.path.exists(calibration_file) is True:
+        shutil.copy2(calibration_file, 'out_dir_resampling/calibration_meg.dat')  # required to run a pipeline on BL
+
+    # Read destination file 
+    destination_file = config.pop('destination')
+    if os.path.exists(destination_file) is True:
+        shutil.copy2(destination_file, 'out_dir_resampling/destination.fif')  # required to run a pipeline on BL
+
+    # Read head pos file
+    head_pos = config.pop('headshape')
+    if os.path.exists(head_pos) is True:
+        shutil.copy2(head_pos, 'out_dir_resampling/headshape.pos')  # required to run a pipeline on BL
+
     # Read events file 
     events_file = config.pop('events')
     if os.path.exists(events_file) is True:
@@ -281,7 +304,7 @@ def main():
         del config['_app'], config['_tid'], config['_inputs'], config['_outputs'] 
     kwargs = config  
 
-    # Apply temporal filtering
+    # Apply resampling
     data_copy = data.copy()
     data_filtered = resampling(data_copy, **kwargs)
     del data_copy

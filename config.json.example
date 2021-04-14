@@ -1,5 +1,9 @@
 {
     "fif": "/network/lustre/iss01/home/aurore.bussalb/Repositories/app-bad-channels/out_dir_bad_channels/meg.fif",
+	"calibration": "/network/lustre/iss01/home/aurore.bussalb/Repositories/data_test_BL/sss_cal.dat",
+    "crosstalk": "/network/lustre/iss01/home/aurore.bussalb/Repositories/data_test_BL/ct_sparse.fif",
+    "headshape": "",
+    "destination": "",
 	"events": "/network/lustre/iss01/home/aurore.bussalb/Repositories/app-create-events/out_dir_create_events/events.tsv",
 	"param_epoched_data": false,
 	"param_sfreq": 512,
@@ -8,5 +12,6 @@
 	"param_stim_picks": null,
 	"param_n_jobs": 1,
 	"param_events": null,
-	"param_pad": "reflect_limited"
+	"param_raw_pad": "reflect_limited",
+	"param_epoch_pad": "edge"
 }

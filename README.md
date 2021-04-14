@@ -9,6 +9,11 @@ This is a draft of a future Brainlife App that resamples MEG signals using the M
 1) Resample MEG signals 
 2) Input file is:
     * a MEG file in `.fif` format,
+    * an optional fine calibration file in `.dat`,
+    * an optional crosstalk compensation file in `.fif`,
+    * an optional head position file in `.pos`,
+    * an optional destination file in `.fif`,
+    * an optional event file in `.tsv`.
 3) Input parameters are:
     * param_epoched_data: `bool`, if True, the data to be resampled is epoched, else it is continuous.
     * param_resample_sfreq: `float`, new sample rate to use.
@@ -17,7 +22,8 @@ This is a draft of a future Brainlife App that resamples MEG signals using the M
     * param_resample_stim_picks: `list of /*int` or `None`, stim channels. Default is `None`.
     * param_resample_n_jobs: `int`, number of jobs to run in parallel. Default is 1. 
     * param_resample_events: `2D array, shape (n_events, 3)`, optional, an optional event matrix. Default is `None`.
-    * param_pad: `str`, the type of padding to use for raw data. Default is 'reflect_limited' for raw data and 'edge' for epoch data. 
+    * param_raw_pad: `str`, the type of padding to use for raw data. Default is 'reflect_limited'. 
+    * param_epoch_pad: `str`, the type of padding to use for epoched data. Default is 'edge'. 
 
 This list along with the parameters' default values correspond to the 0.22.0 version of MNE Python.  
 
