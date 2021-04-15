@@ -57,7 +57,9 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
         if events_file is not None:
             # Convert tsv file into a numpy array of integers
             array_events = np.loadtxt(fname=events_file, delimiter="\t")
-            events_file = array_events.astype(int)
+            events = array_events.astype(int)
+        else:
+            events = None
 
         # Load data
         data.load_data()
@@ -65,7 +67,7 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
         # Resample data
         data_resampled, events = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
                                                stim_picks=param_stim_picks, n_jobs=param_n_jobs,
-                                               events=events_file, pad=param_raw_pad)
+                                               events=events, pad=param_raw_pad)
 
         # Save the events whose onsets were jointly resampled with the data
         if param_save_jointly_resampled_events is True:
@@ -312,7 +314,7 @@ def main():
     if config['param_stim_picks'] == "":
         config['param_stim_picks'] = None  # when App is run on Bl, no value for this parameter corresponds to ''  
 
-    # Check if the user will save an events file empty
+    # Check if the user will save an empty events file 
     if events_file is None and config['param_save_jointly_resampled_events'] is True:
         value_error_message = f'You cannot save en empty events file. ' \
                               f"If you haven't an events file, please set " \
