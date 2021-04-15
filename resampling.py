@@ -68,6 +68,7 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
                                        pad=param_epoch_pad)
 
     # Save file
+    print((type(data_resampled)))
     data_resampled.save("out_dir_resampling/meg.fif", overwrite=True)
 
     return data_resampled 
