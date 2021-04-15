@@ -7,7 +7,7 @@ import os
 import shutil
 
 
-def resampling(data, param_events, param_epoched_data, param_sfreq, param_npad, param_window,
+def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, param_window,
                param_stim_picks, param_n_jobs, param_raw_pad, param_epoch_pad):
     """Resample the signals using MNE Python and save the file once resampled.
 
