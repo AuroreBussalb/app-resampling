@@ -61,7 +61,7 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
                                        stim_picks=param_stim_picks, n_jobs=param_n_jobs,
                                        events=events_file, pad=param_raw_pad)
 
-        print(events_file)
+        print(type(events_file))
 
     # For epoched data 
     else:
