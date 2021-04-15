@@ -7,28 +7,28 @@ import os
 import shutil
 
 
-def resampling(data, param_epoched_data, param_sfreq, param_npad, param_window,
-               param_stim_picks, param_n_jobs, param_events, param_raw_pad, param_epoch_pad):
+def resampling(data, param_events, param_epoched_data, param_sfreq, param_npad, param_window,
+               param_stim_picks, param_n_jobs, param_raw_pad, param_epoch_pad):
     """Resample the signals using MNE Python and save the file once resampled.
 
     Parameters
     ----------
     data: instance of mne.io.Raw or instance of mne.Epochs
         Data to be resampled.
+    events_file: str or None
+        Path to the optional '.tsv' file containing the event matrix (2D array, shape (n_events, 3)). 
     param_epoched_data: bool
         If True, the data to be resampled is epoched, else it is continuous.
     param_sfreq: float
-        New sample rate to use.
+        New sample rate to use in Hz.
     param_npad: int or str
         Amount to pad the start and end of the data. Can be “auto” (default).
     param_window: str
-        Frequency-domain window to use in resampling. 
+        Frequency-domain window to use in resampling. Default is "boxcar". 
     param_stim_picks: list of int or None
         Stim channels.
     param_n_jobs: int
         Number of jobs to run in parallel.
-    param_events: 2D array, shape (n_events, 3) or None
-        An optional event matrix. 
     param_raw_pad: str
         The type of padding to use for raw data. Supports all numpy.pad() mode options. Can also be 
         “reflect_limited” (default) and "edge".
@@ -45,13 +45,19 @@ def resampling(data, param_epoched_data, param_sfreq, param_npad, param_window,
     # For continuous data 
     if param_epoched_data is False:
 
+        # Test if events file exist
+        if events_file is not None:
+            # Convert tsv file into a numpy array of integers
+            array_events = np.loadtxt(fname=events_file, delimiter="\t")
+            events = array_events.astype(int)
+
         # Load data
         data.load_data()
 
         # Resample data
         data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
                                        stim_picks=param_stim_picks, n_jobs=param_n_jobs,
-                                       events=param_events, pad=param_raw_pad)
+                                       events=events, pad=param_raw_pad)
 
     # For epoched data 
     else:
@@ -271,8 +277,10 @@ def main():
 
     # Read events file 
     events_file = config.pop('events')
-    if os.path.exists(events_file) is True:
-        shutil.copy2(events_file, 'out_dir_resampling/events.tsv')  # required to run a pipeline on BL
+    if os.path.exists(events_file) is False:
+        events_file = None
+    else:
+        shutil.copy2(events_file, 'out_dir_resampling/events.tsv') # required to run a pipeline on BL
 
     # Info message about resampling if applied
     if config['param_epoched_data'] is False:
@@ -291,9 +299,6 @@ def main():
     # stim picks
     if config['param_stim_picks'] == "":
         config['param_stim_picks'] = None  # when App is run on Bl, no value for this parameter corresponds to ''  
-
-    if config['param_events'] == "":
-        config['param_events'] = None  # when App is run on Bl, no value for this parameter corresponds to '' 
             
     # Keep bad channels in memory
     bad_channels = data.info['bads']
@@ -306,7 +311,7 @@ def main():
 
     # Apply resampling
     data_copy = data.copy()
-    data_filtered = resampling(data_copy, **kwargs)
+    data_filtered = resampling(data_copy, events_file, **kwargs)
     del data_copy
 
     # Success message in product.json    

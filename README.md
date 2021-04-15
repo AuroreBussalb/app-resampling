@@ -21,7 +21,6 @@ This is a draft of a future Brainlife App that resamples MEG signals using the M
     * param_resample_window: `str`, frequency-domain window to use in resampling. Default is `boxcar`. 
     * param_resample_stim_picks: `list of /*int` or `None`, stim channels. Default is `None`.
     * param_resample_n_jobs: `int`, number of jobs to run in parallel. Default is 1. 
-    * param_resample_events: `2D array, shape (n_events, 3)`, optional, an optional event matrix. Default is `None`.
     * param_raw_pad: `str`, the type of padding to use for raw data. Default is 'reflect_limited'. 
     * param_epoch_pad: `str`, the type of padding to use for epoched data. Default is 'edge'. 
 

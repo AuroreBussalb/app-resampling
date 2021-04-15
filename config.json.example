@@ -11,7 +11,6 @@
 	"param_window": "boxcar",
 	"param_stim_picks": null,
 	"param_n_jobs": 1,
-	"param_events": null,
 	"param_raw_pad": "reflect_limited",
 	"param_epoch_pad": "edge"
 }
