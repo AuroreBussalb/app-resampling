@@ -314,7 +314,9 @@ def main():
 
     # Check if the user will save an events file empty
     if events_file is None and config['param_save_jointly_resampled_events'] is True:
-        value_error_message = f'You cannot save en empty events file.'
+        value_error_message = f'You cannot save en empty events file. ' \
+                              f"If you haven't an events file, please set " \
+                              f"'param_save_jointly_resampled_event' to False."
         # Raise exception
         raise ValueError(value_error_message)
             
