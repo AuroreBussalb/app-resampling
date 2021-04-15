@@ -57,7 +57,7 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
         data.load_data()
 
         # Test if events file exist
-        if events_file is not None and param_save_jointly_resampled_events is True::
+        if events_file is not None and param_save_jointly_resampled_events is True:
 
             # Convert tsv file into a numpy array of integers
             array_events = np.loadtxt(fname=events_file, delimiter="\t")
