@@ -60,7 +60,6 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
                                        events=events_file, pad=param_raw_pad)
 
         print(events_file)
-        print(events_file.shape)
 
     # For epoched data 
     else:
