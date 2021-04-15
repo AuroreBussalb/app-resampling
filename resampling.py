@@ -69,7 +69,7 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
 
         # Save the events whose onsets were jointly resampled with the data
         if param_save_jointly_resampled_events is True:
-            np.savetxt("out_dir_create_events/events.tsv", array_events, delimiter="\t")
+            np.savetxt("out_dir_resampling/events.tsv", array_events, delimiter="\t")
 
     # For epoched data 
     else:
