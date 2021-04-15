@@ -315,12 +315,12 @@ def main():
         config['param_stim_picks'] = None  # when App is run on Bl, no value for this parameter corresponds to ''  
 
     # Check if the user will save an empty events file 
-    if events_file is None and config['param_save_jointly_resampled_events'] is True:
-        value_error_message = f'You cannot save en empty events file. ' \
-                              f"If you haven't an events file, please set " \
-                              f"'param_save_jointly_resampled_event' to False."
-        # Raise exception
-        raise ValueError(value_error_message)
+    # if events_file is None and config['param_save_jointly_resampled_events'] is True:
+    #     value_error_message = f'You cannot save en empty events file. ' \
+    #                           f"If you haven't an events file, please set " \
+    #                           f"'param_save_jointly_resampled_event' to False."
+    #     # Raise exception
+    #     raise ValueError(value_error_message)
             
     # Keep bad channels in memory
     bad_channels = data.info['bads']
