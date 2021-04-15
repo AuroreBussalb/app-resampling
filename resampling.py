@@ -59,6 +59,7 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
             array_events = np.loadtxt(fname=events_file, delimiter="\t")
             events = array_events.astype(int)
         else:
+            print('teeeeest')
             events = None
 
         # Load data
