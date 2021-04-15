@@ -53,26 +53,29 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
     # For continuous data 
     if param_epoched_data is False:
 
-        # Test if events file exist
-        if events_file is not None:
-            # Convert tsv file into a numpy array of integers
-            array_events = np.loadtxt(fname=events_file, delimiter="\t")
-            events = array_events.astype(int)
-        else:
-            print('teeeeest')
-            events = None
-
         # Load data
         data.load_data()
 
-        # Resample data
-        data_resampled, events = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
-                                               stim_picks=param_stim_picks, n_jobs=param_n_jobs,
-                                               events=events, pad=param_raw_pad)
+        # Test if events file exist
+        if events_file is not None and param_save_jointly_resampled_events is True::
 
-        # Save the events whose onsets were jointly resampled with the data
-        if param_save_jointly_resampled_events is True:
+            # Convert tsv file into a numpy array of integers
+            array_events = np.loadtxt(fname=events_file, delimiter="\t")
+            events = array_events.astype(int)
+
+            # Resample data
+            data_resampled, events = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
+                                                   stim_picks=param_stim_picks, n_jobs=param_n_jobs,
+                                                   events=events, pad=param_raw_pad)
+
+            # Save the events whose onsets were jointly resampled with the data
             np.savetxt("out_dir_resampling/events.tsv", array_events, delimiter="\t")
+
+        else:
+            # Resample data
+            data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
+                                                   stim_picks=param_stim_picks, n_jobs=param_n_jobs,
+                                                   events=None, pad=param_raw_pad)
 
     # For epoched data 
     else:
