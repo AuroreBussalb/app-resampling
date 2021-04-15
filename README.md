@@ -23,6 +23,7 @@ This is a draft of a future Brainlife App that resamples MEG signals using the M
     * param_resample_n_jobs: `int`, number of jobs to run in parallel. Default is 1. 
     * param_raw_pad: `str`, the type of padding to use for raw data. Default is 'reflect_limited'. 
     * param_epoch_pad: `str`, the type of padding to use for epoched data. Default is 'edge'. 
+    * param_save_jointly_resampled_events: `bool`, if True, save the events file resampled jointly with the data. Default is True.
 
 This list along with the parameters' default values correspond to the 0.22.0 version of MNE Python.  
 

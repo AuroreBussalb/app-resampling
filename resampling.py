@@ -2,13 +2,15 @@
 
 import json
 import mne
+import warnings
 import numpy as np
 import os
 import shutil
 
 
 def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, param_window,
-               param_stim_picks, param_n_jobs, param_raw_pad, param_epoch_pad):
+               param_stim_picks, param_n_jobs, param_raw_pad, param_epoch_pad, 
+               param_save_jointly_resampled_events):
     """Resample the signals using MNE Python and save the file once resampled.
 
     Parameters
@@ -17,6 +19,7 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
         Data to be resampled.
     events_file: str or None
         Path to the optional '.tsv' file containing the event matrix (2D array, shape (n_events, 3)). 
+        When specified, the onsets of the events are resampled jointly with the data
     param_epoched_data: bool
         If True, the data to be resampled is epoched, else it is continuous.
     param_sfreq: float
@@ -35,11 +38,16 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
     param_epoch_pad: str
         The type of padding to use for epoched data. Supports all numpy.pad() mode options. Can also be 
         “reflect_limited” and "edge" (default).
+    param_save_jointly_resampled_events: bool
+        If True, save the events file resampled jointly with the data.
 
     Returns
     -------
     raw_filtered: instance of mne.io.Raw or instance of mne.Epochs
         The raw data after resampling.
+    events: array, shape (n_events, 3) or None
+        If events are jointly resampled, these are returned with the raw.
+        The input events are not modified.
     """
 
     # For continuous data 
@@ -56,8 +64,12 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
 
         # Resample data
         data_resampled, events = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
-                                       stim_picks=param_stim_picks, n_jobs=param_n_jobs,
-                                       events=events_file, pad=param_raw_pad)
+                                               stim_picks=param_stim_picks, n_jobs=param_n_jobs,
+                                               events=events_file, pad=param_raw_pad)
+
+        # Save the events whose onsets were jointly resampled with the data
+        if param_save_jointly_resampled_events is True:
+            np.savetxt("out_dir_create_events/events.tsv", array_events, delimiter="\t")
 
     # For epoched data 
     else:
@@ -299,6 +311,12 @@ def main():
     # stim picks
     if config['param_stim_picks'] == "":
         config['param_stim_picks'] = None  # when App is run on Bl, no value for this parameter corresponds to ''  
+
+    # Check if the user will save an events file empty
+    if events_file is None and config['param_save_jointly_resampled_events'] is True:
+        value_error_message = f'You cannot save en empty events file.'
+        # Raise exception
+        raise ValueError(value_error_message)
             
     # Keep bad channels in memory
     bad_channels = data.info['bads']

@@ -12,5 +12,6 @@
 	"param_stim_picks": null,
 	"param_n_jobs": 1,
 	"param_raw_pad": "reflect_limited",
-	"param_epoch_pad": "edge"
+	"param_epoch_pad": "edge",
+	"param_save_jointly_resampled_events": true
 }
