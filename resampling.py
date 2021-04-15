@@ -48,21 +48,19 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
         # Test if events file exist
         if events_file is not None:
             # Convert tsv file into a numpy array of integers
-            # array_events = np.loadtxt(fname=events_file, delimiter="\t")
-            # events_file = array_events.astype(int)
-
-            events_file = np.loadtxt(fname=events_file, delimiter="\t")
+            array_events = np.loadtxt(fname=events_file, delimiter="\t")
+            events_file = array_events.astype(int)
 
         # Load data
         data.load_data()
 
         # Resample data
-        data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
+        data_resampled, events = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
                                        stim_picks=param_stim_picks, n_jobs=param_n_jobs,
                                        events=events_file, pad=param_raw_pad)
 
         print(type(events_file))
-        print(np.shape(events_file))
+        print(events)
 
     # For epoched data 
     else:
