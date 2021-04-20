@@ -30,8 +30,8 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
         Frequency-domain window to use in resampling. Default is "boxcar". 
     param_stim_picks: list of int or None
         Stim channels.
-    param_n_jobs: int
-        Number of jobs to run in parallel.
+    param_n_jobs: int or str
+        Number of jobs to run in parallel. an be ‘cuda’ if cupy is installed properly. Default is 1.
     param_raw_pad: str
         The type of padding to use for raw data. Supports all numpy.pad() mode options. Can also be 
         “reflect_limited” (default) and "edge".
@@ -43,8 +43,8 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
 
     Returns
     -------
-    raw_filtered: instance of mne.io.Raw or instance of mne.Epochs
-        The raw data after resampling.
+    data_resampled: instance of mne.io.Raw or instance of mne.Epochs
+        The data after resampling.
     events: array, shape (n_events, 3) or None
         If events are jointly resampled, these are returned with the raw.
         The input events are not modified.
@@ -319,12 +319,24 @@ def main():
         config['param_stim_picks'] = None  # when App is run on Bl, no value for this parameter corresponds to ''  
 
     # Check if the user will save an empty events file 
-    # if events_file is None and config['param_save_jointly_resampled_events'] is True:
-    #     value_error_message = f'You cannot save en empty events file. ' \
-    #                           f"If you haven't an events file, please set " \
-    #                           f"'param_save_jointly_resampled_event' to False."
-    #     # Raise exception
-    #     raise ValueError(value_error_message)
+    if events_file is None and config['param_save_jointly_resampled_events'] is True:
+        value_error_message = f'You cannot save en empty events file. ' \
+                              f"If you haven't an events file, please set " \
+                              f"'param_save_jointly_resampled_event' to False."
+        # Raise exception
+        raise ValueError(value_error_message)
+
+    # Deal with param_npad parameter
+
+    # When the App is run on BL
+    if config['param_npad'] != "auto":
+        config['param_npad'] = int(config['param_npad'])
+
+    # Deal with param_n_jobs parameter
+
+    # When the App is run on BL
+    if config['param_n_jobs'] != 'cuda':
+        config['param_n_jobs']  = int(config['param_n_jobs'])
             
     # Keep bad channels in memory
     bad_channels = data.info['bads']

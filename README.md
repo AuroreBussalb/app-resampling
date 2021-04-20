@@ -16,11 +16,11 @@ This is a draft of a future Brainlife App that resamples MEG signals using the M
     * an optional event file in `.tsv`.
 3) Input parameters are:
     * param_epoched_data: `bool`, if True, the data to be resampled is epoched, else it is continuous.
-    * param_resample_sfreq: `float`, new sample rate to use.
-    * param_resample_npad: `int` or `str`, amount to pad the start and end of the data. Default is 'auto'.
-    * param_resample_window: `str`, frequency-domain window to use in resampling. Default is `boxcar`. 
-    * param_resample_stim_picks: `list of int` or `None`, stim channels. Default is `None`.
-    * param_resample_n_jobs: `int`, number of jobs to run in parallel. Default is 1. 
+    * param_sfreq: `float`, new sample rate to use.
+    * param_npad: `int` or `str`, amount to pad the start and end of the data. Default is 'auto'.
+    * param_window: `str`, frequency-domain window to use in resampling. Default is `boxcar`. 
+    * param_stim_picks: `list of int` or `None`, stim channels. Default is `None`.
+    * param_n_jobs: `int` or `str`, number of jobs to run in parallel. Can be 'cuda' if cupy is installed properly. Default is 1. 
     * param_raw_pad: `str`, the type of padding to use for raw data. Default is 'reflect_limited'. 
     * param_epoch_pad: `str`, the type of padding to use for epoched data. Default is 'edge'. 
     * param_save_jointly_resampled_events: `bool`, if True, save the events file resampled jointly with the data. Default is True.
