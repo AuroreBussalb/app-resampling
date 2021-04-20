@@ -31,7 +31,7 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
     param_stim_picks: list of int or None
         Stim channels.
     param_n_jobs: int or str
-        Number of jobs to run in parallel. an be ‘cuda’ if cupy is installed properly. Default is 1.
+        Number of jobs to run in parallel. Can be ‘cuda’ if cupy is installed properly. Default is 1.
     param_raw_pad: str
         The type of padding to use for raw data. Supports all numpy.pad() mode options. Can also be 
         “reflect_limited” (default) and "edge".
@@ -337,7 +337,16 @@ def main():
     # When the App is run on BL
     if config['param_n_jobs'] != 'cuda':
         config['param_n_jobs']  = int(config['param_n_jobs'])
-            
+
+    # Deal with stim picks parameter
+
+    # When the App is run on BL
+    if isinstance(config['param_stim_picks'], str) and config['param_stim_picks'] is not None:
+        config['param_stim_picks'] = config['param_stim_picks'].replace('[', '')
+        config['param_stim_picks'] = config['param_stim_picks'].replace(']', '')
+        config['param_stim_picks'] = config['param_stim_picks'].replace("'", '')
+        config['param_stim_picks'] = list(map(int, config['param_stim_picks'].split(', ')))
+
     # Keep bad channels in memory
     bad_channels = data.info['bads']
 
