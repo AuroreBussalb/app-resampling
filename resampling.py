@@ -326,25 +326,23 @@ def main():
         # Raise exception
         raise ValueError(value_error_message)
 
-    # Deal with param_npad parameter
+    ## Convert parameters ##
 
-    # When the App is run on BL
+    # Deal with param_npad parameter #
+    # Convert param_npad into int if not "auto" when the App is run on BL
     if config['param_npad'] != "auto":
         config['param_npad'] = int(config['param_npad'])
 
-    # Deal with param_n_jobs parameter
-
-    # When the App is run on BL
+    # Deal with param_n_jobs parameter #
+    # Convert n jobs into int when the App is run on BL
     if config['param_n_jobs'] != 'cuda':
         config['param_n_jobs']  = int(config['param_n_jobs'])
 
-    # Deal with stim picks parameter
-
-    # When the App is run on BL
+    # Deal with stim picks parameter #
+    # Convert stim picks into a list of int when the App is run on BL
     if isinstance(config['param_stim_picks'], str) and config['param_stim_picks'] is not None:
         config['param_stim_picks'] = config['param_stim_picks'].replace('[', '')
         config['param_stim_picks'] = config['param_stim_picks'].replace(']', '')
-        config['param_stim_picks'] = config['param_stim_picks'].replace("'", '')
         config['param_stim_picks'] = list(map(int, config['param_stim_picks'].split(', ')))
 
     # Keep bad channels in memory
