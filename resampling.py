@@ -266,6 +266,9 @@ def main():
     with open('config.json') as config_json:
         config = json.load(config_json)
 
+
+    ## Read the optional files ##
+
     # Read the files
     data_file = config.pop('fif')
     if config['param_epoched_data'] is False:
@@ -300,6 +303,7 @@ def main():
     else:
         shutil.copy2(events_file, 'out_dir_resampling/events.tsv') # required to run a pipeline on BL
 
+    
     # Info message about resampling if applied
     if config['param_epoched_data'] is False:
         dict_json_product['brainlife'].append({'type': 'info', 'msg': f'Data was resampled at '
@@ -312,11 +316,9 @@ def main():
     # Comment about resampling
     comments_resample_freq = f'{config["param_sfreq"]}Hz'
 
-    # Check for None parameters
-
-    # stim picks
-    if config['param_stim_picks'] == "":
-        config['param_stim_picks'] = None  # when App is run on Bl, no value for this parameter corresponds to ''  
+    # Convert all "" into None when the App runs on BL
+    tmp = dict((k, None) for k, v in config.items() if v == "")
+    config.update(tmp)
 
     # Check if the user will save an empty events file 
     if events_file is None and config['param_save_jointly_resampled_events'] is True:
@@ -326,6 +328,7 @@ def main():
         # Raise exception
         raise ValueError(value_error_message)
 
+    
     ## Convert parameters ##
 
     # Deal with param_npad parameter #
@@ -348,7 +351,9 @@ def main():
     # Keep bad channels in memory
     bad_channels = data.info['bads']
 
-    # Define kwargs
+    
+    ## Define kwargs ##
+
     # Delete keys values in config.json when this app is executed on Brainlife
     if '_app' and '_tid' and '_inputs' and '_outputs' in config.keys():
         del config['_app'], config['_tid'], config['_inputs'], config['_outputs'] 
