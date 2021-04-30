@@ -88,56 +88,29 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
     # Save file
     data_resampled.save("out_dir_resampling/meg.fif", overwrite=True)
 
-    return data_resampled 
+    return data_resampled, events 
 
 
-def _compute_snr(meg_file):
-    # Compute the SNR
-
-    # select only MEG channels and exclude the bad channels
-    meg_file = meg_file.pick_types(meg=True, exclude='bads')
-
-    # create fixed length events
-    array_events = mne.make_fixed_length_events(meg_file, duration=10)
-
-    # create epochs
-    epochs = mne.Epochs(meg_file, array_events)
-
-    # mean signal amplitude on each epoch
-    epochs_data = epochs.get_data()
-    mean_signal_amplitude_per_epoch = epochs_data.mean(axis=(1, 2))  # mean on channels and times
-
-    # mean across all epochs and its std error
-    mean_final = mean_signal_amplitude_per_epoch.mean()
-    std_error_final = np.std(mean_signal_amplitude_per_epoch, ddof=1) / np.sqrt(
-        np.size(mean_signal_amplitude_per_epoch))
-
-    # compute SNR
-    snr = mean_final / std_error_final
-
-    return snr
-
-
-def _generate_report(data_file_before, raw_before_preprocessing, raw_after_preprocessing, bad_channels,
-                     comments_about_filtering, notch_freqs_start, resample_sfreq, snr_before, snr_after):
+def _generate_report(data_file_before, data_before_preprocessing, data_after_preprocessing, bad_channels,
+                     cresample_sfreq):
     # Generate a report
 
     # Instance of mne.Report
-    report = mne.Report(title='Results of filtering ', verbose=True)
+    report = mne.Report(title='Results of resampling', verbose=True)
 
     # Plot MEG signals in temporal domain
-    fig_raw = raw_before_preprocessing.pick(['meg'], exclude='bads').plot(duration=10, scalings='auto', butterfly=False,
-                                                                          show_scrollbars=False, proj=False)
-    fig_raw_maxfilter = raw_after_preprocessing.pick(['meg'], exclude='bads').plot(duration=10, scalings='auto',
-                                                                                   butterfly=False,
-                                                                                   show_scrollbars=False, proj=False)
+    fig_data = data_before_preprocessing.pick(['meg'], exclude='bads').plot(duration=10, scalings='auto', butterfly=False,
+                                                                            show_scrollbars=False, proj=False)
+    fig_data_resampled = data_after_preprocessing.pick(['meg'], exclude='bads').plot(duration=10, scalings='auto',
+                                                                                     butterfly=False,
+                                                                                     show_scrollbars=False, proj=False)
 
     # Plot power spectral density
-    fig_raw_psd = raw_before_preprocessing.plot_psd()
-    fig_raw_maxfilter_psd = raw_after_preprocessing.plot_psd()
+    fig_data_psd = data_before_preprocessing.plot_psd()
+    fig_data_maxfilter_psd = data_after_preprocessing.plot_psd()
 
     # Add figures to report
-    report.add_figs_to_section(fig_raw, captions='MEG signals before filtering', section='Temporal domain')
+    report.add_figs_to_section(fig_data, captions='MEG signals before filtering', section='Temporal domain')
     report.add_figs_to_section(fig_raw_maxfilter, captions='MEG signals after filtering',
                                comments=comments_about_filtering,
                                section='Temporal domain')
@@ -184,74 +157,21 @@ def _generate_report(data_file_before, raw_before_preprocessing, raw_after_prepr
                     <td>Bad channels: {message_channels}</td>
                 </tr>
                 <tr>
-                    <td>Sampling frequency before preprocessing: {sampling_frequency}Hz</td>
+                    <td>Sampling frequency before resampling: {sampling_frequency}Hz</td>
                 </tr>
                 <tr>
-                    <td>Highpass before preprocessing: {highpass}Hz</td>
+                    <td>Highpass: {highpass}Hz</td>
                 </tr>
                 <tr>
-                    <td>Lowpass before preprocessing: {lowpass}Hz</td>
+                    <td>Lowpass {lowpass}Hz</td>
                 </tr>
             </table>
         </body>
 
         </html>"""
 
-    # Info on SNR
-    html_text_snr = f"""<html>
-
-    <head>
-        <style type="text/css">
-            table {{ border-collapse: collapse;}}
-            td {{ text-align: center; border: 1px solid #000000; border-style: dashed; font-size: 15px; }}
-        </style>
-    </head>
-
-    <body>
-        <table width="50%" height="80%" border="2px">
-            <tr>
-                <td>SNR before filtering: {snr_before}</td>
-            </tr>
-            <tr>
-                <td>SNR after filtering: {snr_after}</td>
-            </tr>
-        </table>
-    </body>
-
-    </html>"""
-
-    # Info on SNR
-    html_text_summary_filtering = f"""<html>
-
-    <head>
-        <style type="text/css">
-            table {{ border-collapse: collapse;}}
-            td {{ text-align: center; border: 1px solid #000000; border-style: dashed; font-size: 15px; }}
-        </style>
-    </head>
-
-    <body>
-        <table width="50%" height="80%" border="2px">
-            <tr>
-                <td>Temporal filtering: {comments_about_filtering}</td>
-            </tr>
-            <tr>
-                <td>Notch: {notch_freqs_start}</td>
-            </tr>
-            <tr>
-                <td>Resampling: {resample_sfreq}</td>
-            </tr>
-        </table>
-    </body>
-
-    </html>"""
-
     # Add html to reports
     report.add_htmls_to_section(html_text_info, captions='MEG recording features', section='Data info', replace=False)
-    report.add_htmls_to_section(html_text_summary_filtering, captions='Summary filtering applied',
-                                section='Filtering info', replace=False)
-    report.add_htmls_to_section(html_text_snr, captions='Signal to noise ratio', section='Signal to noise ratio',
-                                replace=False)
 
     # Save report
     report.save('out_dir_report/report_filtering.html', overwrite=True)
@@ -361,19 +281,14 @@ def main():
 
     # Apply resampling
     data_copy = data.copy()
-    data_filtered = resampling(data_copy, events_file, **kwargs)
+    data_resampled = resampling(data_copy, events_file, **kwargs)
     del data_copy
 
     # Success message in product.json    
     dict_json_product['brainlife'].append({'type': 'success', 'msg': 'Data was successfully resampled.'})
 
-    # Compute SNR
-    # snr_before = _compute_snr(raw)
-    # snr_after = _compute_snr(raw_filtered)
-
     # Generate a report
-    # _generate_report(data_file, raw, raw_filtered, bad_channels, comments_about_filtering,
-    #                  comments_notch, comments_resample_freq, snr_before, snr_after)
+    _generate_report(data_file, data, data_resampled, bad_channels, comments_resample_freq)
 
     # Save the dict_json_product in a json file
     with open('product.json', 'w') as outfile:
