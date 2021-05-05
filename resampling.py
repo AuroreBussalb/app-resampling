@@ -74,8 +74,8 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
         else:
             # Resample data
             data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
-                                                   stim_picks=param_stim_picks, n_jobs=param_n_jobs,
-                                                   events=None, pad=param_raw_pad)
+                                           stim_picks=param_stim_picks, n_jobs=param_n_jobs,
+                                           events=None, pad=param_raw_pad)
 
     # For epoched data 
     else:
