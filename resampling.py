@@ -299,7 +299,7 @@ def main():
     dict_json_product['brainlife'].append({'type': 'success', 'msg': 'Data was successfully resampled.'})
 
     # Generate a report
-    _generate_report(data_file, data, data_resampled, bad_channels, comments_resample_freq)
+    # _generate_report(data_file, data, data_resampled, bad_channels, comments_resample_freq)
 
     # Save the dict_json_product in a json file
     with open('product.json', 'w') as outfile:
