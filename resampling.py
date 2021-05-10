@@ -198,31 +198,42 @@ def main():
 
     # Read the crosstalk file
     cross_talk_file = config.pop('crosstalk')
-    if os.path.exists(cross_talk_file) is True:
-        shutil.copy2(cross_talk_file, 'out_dir_resampling/crosstalk_meg.fif')  # required to run a pipeline on BL
+    if cross_talk_file is not None:
+        if os.path.exists(cross_talk_file) is True:
+            shutil.copy2(cross_talk_file, 'out_dir_resampling/crosstalk_meg.fif')  # required to run a pipeline on BL
 
     # Read the calibration file
     calibration_file = config.pop('calibration')
-    if os.path.exists(calibration_file) is True:
-        shutil.copy2(calibration_file, 'out_dir_resampling/calibration_meg.dat')  # required to run a pipeline on BL
+    if calibration_file is not None:
+        if os.path.exists(calibration_file) is True:
+            shutil.copy2(calibration_file, 'out_dir_resampling/calibration_meg.dat')  # required to run a pipeline on BL
 
     # Read destination file 
     destination_file = config.pop('destination')
-    if os.path.exists(destination_file) is True:
-        shutil.copy2(destination_file, 'out_dir_resampling/destination.fif')  # required to run a pipeline on BL
+    if destination_file is not None:
+        if os.path.exists(destination_file) is True:
+            shutil.copy2(destination_file, 'out_dir_resampling/destination.fif')  # required to run a pipeline on BL
 
     # Read head pos file
     head_pos = config.pop('headshape')
-    if os.path.exists(head_pos) is True:
-        shutil.copy2(head_pos, 'out_dir_resampling/headshape.pos')  # required to run a pipeline on BL
+    if head_pos is not None:
+        if os.path.exists(head_pos) is True:
+            shutil.copy2(head_pos, 'out_dir_resampling/headshape.pos')  # required to run a pipeline on BL
 
     # Read events file 
     events_file = config.pop('events')
-    if os.path.exists(events_file) is False:
-        events_file = None
-    else:
-        shutil.copy2(events_file, 'out_dir_resampling/events.tsv') # required to run a pipeline on BL
+    if events_file is not None:
+        if os.path.exists(events_file) is True:
+            shutil.copy2(events_file, 'out_dir_resampling/events.tsv') # required to run a pipeline on BL
+        else:
+            events_file = None
 
+    # Read channels file 
+    channels_file = config.pop('channels')
+    if channels_file is not None:
+        if os.path.exists(channels_file):
+            shutil.copy2(channels_file, 'out_dir_resampling/channels.tsv')  # required to run a pipeline on BL
+        
     
     # Info message about resampling if applied
     if config['param_epoched_data'] is False:
