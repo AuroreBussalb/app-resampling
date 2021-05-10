@@ -88,7 +88,7 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
     # Save file
     data_resampled.save("out_dir_resampling/meg.fif", overwrite=True)
 
-    return data_resampled, events 
+    return data_resampled 
 
 
 def _generate_report(data_file_before, data_before_preprocessing, data_after_preprocessing, bad_channels,
