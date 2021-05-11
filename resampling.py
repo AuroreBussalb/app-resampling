@@ -8,7 +8,7 @@ import os
 import shutil
 
 
-def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, param_window,
+def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad, param_window,
                param_stim_picks, param_n_jobs, param_raw_pad, param_epoch_pad, 
                param_save_jointly_resampled_events):
     """Resample the signals using MNE Python and save the file once resampled.
@@ -17,8 +17,8 @@ def resampling(data, events_file, param_epoched_data, param_sfreq, param_npad, p
     ----------
     data: instance of mne.io.Raw or instance of mne.Epochs
         Data to be resampled.
-    events_file: str or None
-        Path to the optional '.tsv' file containing the event matrix (2D array, shape (n_events, 3)). 
+    events_file: np.array or None
+        The event matrix (2D array, shape (n_events, 3)). 
         When specified, the onsets of the events are resampled jointly with the data
     param_epoched_data: bool
         If True, the data to be resampled is epoched, else it is continuous.
@@ -225,14 +225,47 @@ def main():
     if events_file is not None:
         if os.path.exists(events_file) is True:
             shutil.copy2(events_file, 'out_dir_resampling/events.tsv') # required to run a pipeline on BL
+            ############### TO BE TESTED ON NO RESTING STATE DATA
+            # Compute the events matrix #
+            df_events = pd.read_csv(events_file, sep='\t')
+            
+            # Extract relevant info from df_events
+            samples = df_events['sample'].values
+            event_id = df_events['value'].values
+
+            # Compute the values for events matrix 
+            events_time_in_sample = [raw.first_samp + sample for sample in samples]
+            values_of_trigger_channels = [0]*len(events_time_in_sample)
+
+            # Create a dataframe
+            df_events_matrix = pd.DataFrame([events_time_in_sample, values_of_trigger_channels, event_id])
+            df_events_matrix = df_events_matrix.transpose()
+
+            # Convert dataframe to numpy array
+            events_matrix = df_events_matrix.to_numpy()
         else:
-            events_file = None
+            events_matrix = None
 
     # Read channels file 
     channels_file = config.pop('channels')
     if channels_file is not None:
         if os.path.exists(channels_file):
             shutil.copy2(channels_file, 'out_dir_resampling/channels.tsv')  # required to run a pipeline on BL
+            df_channels = pd.read_csv(channels_file, sep='\t')
+            # Select bad channels' name
+            bad_channels = df_channels[df_channels["status"] == "bad"]['name']
+            bad_channels = list(bad_channels.values)
+            # Put channels.tsv bad channels in data.info['bads']
+            data.info['bads'].sort() 
+            bad_channels.sort()
+            # Warning message
+            if data.info['bads'] != bad_channels:
+                user_warning_message_channels = f'Bad channels from the info of your data file are different from ' \
+                                                f'those in the channels.tsv file. By default, only bad channels from channels.tsv ' \
+                                                f'are considered as bad: the info of your data file is updated with those channels.'
+                warnings.warn(user_warning_message_channels)
+                dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_channels})
+                data.info['bads'] = bad_channels
         
     
     # Info message about resampling if applied
@@ -292,7 +325,7 @@ def main():
 
     # Apply resampling
     data_copy = data.copy()
-    data_resampled = resampling(data_copy, events_file, **kwargs)
+    data_resampled = resampling(data_copy, events_matrix, **kwargs)
     del data_copy
 
     # Success message in product.json    
