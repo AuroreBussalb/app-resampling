@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 import os
 import shutil
+import pandas as pd
 
 
 def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad, param_window,
