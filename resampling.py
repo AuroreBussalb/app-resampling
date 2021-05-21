@@ -61,7 +61,7 @@ def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad,
         if events_matrix is not None and param_save_jointly_resampled_events is True:
 
             # Resample data
-            data_resampled, events = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
+            data_resampled, events_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
                                                    stim_picks=param_stim_picks, n_jobs=param_n_jobs,
                                                    events=events, pad=param_raw_pad)
 
@@ -73,7 +73,7 @@ def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad,
             data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
                                            stim_picks=param_stim_picks, n_jobs=param_n_jobs,
                                            events=None, pad=param_raw_pad)
-            events = None
+            events_resampled = None
 
     # For epoched data 
     else:
@@ -82,12 +82,12 @@ def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad,
         data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, 
                                        window=param_window, n_jobs=param_n_jobs, 
                                        pad=param_epoch_pad)
-        events = None
+        events_resampled = None
 
     # Save file
     data_resampled.save("out_dir_resampling/meg.fif", overwrite=True)
 
-    return data_resampled, events 
+    return data_resampled, events_resampled
 
 
 def _generate_report(data_file_before, data_before_preprocessing, data_after_preprocessing, bad_channels,
@@ -387,11 +387,11 @@ def main():
 
     # Apply resampling
     data_copy = data.copy()
-    data_resampled, events = resampling(data_copy, events_matrix, **kwargs)
+    data_resampled, events_resampled = resampling(data_copy, events_matrix, **kwargs)
     del data_copy
 
     ## Create BIDS compliant events file if existed ## 
-    if events is not None and config['param_epoched_data'] is True:
+    if events_resampled is not None and config['param_epoched_data'] is True:
         # Create a BIDSPath
         bids_path = BIDSPath(subject='subject',
                              session=None,
@@ -409,7 +409,7 @@ def main():
         former_events, dict_events_id = mne.read_events(data_file, return_event_id=True) # to be tested
 
         # Write BIDS to create events.tsv BIDS compliant
-        write_raw_bids(raw, bids_path, events_data=events, event_id=dict_event_id, overwrite=True)
+        write_raw_bids(raw, bids_path, events_data=events_resampled, event_id=dict_event_id, overwrite=True)
 
         # Extract events.tsv from bids path
         events_file = 'bids/sub-subject/meg/sub-subject_task-task_run-01_events.tsv'
