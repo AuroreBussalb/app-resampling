@@ -18,7 +18,7 @@ def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad,
     ----------
     data: instance of mne.io.Raw or instance of mne.Epochs
         Data to be resampled.
-    events_file: np.array or None
+    events_matrix: np.array or None
         The event matrix (2D array, shape (n_events, 3)). 
         When specified, the onsets of the events are resampled jointly with the data
     param_epoched_data: bool
@@ -62,8 +62,8 @@ def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad,
 
             # Resample data
             data_resampled, events_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
-                                                   stim_picks=param_stim_picks, n_jobs=param_n_jobs,
-                                                   events=events, pad=param_raw_pad)
+                                                             stim_picks=param_stim_picks, n_jobs=param_n_jobs,
+                                                             events=events_matrix, pad=param_raw_pad)
 
             # Save the events whose onsets were jointly resampled with the data
             # np.savetxt("out_dir_resampling/events.tsv", array_events, delimiter="\t")
