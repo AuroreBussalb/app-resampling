@@ -269,22 +269,22 @@ def main():
                                                      f"the App detecting bad channels will be used."
                 warnings.warn(user_warning_message_channels_file)
                 dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_channels_file}) 
-        shutil.copy2(channels_file_override, 'out_dir_resampling/channels.tsv')  # required to run a pipeline on BL        
-        df_channels = pd.read_csv(channels_file_override, sep='\t')
-        # Select bad channels' name
-        bad_channels_override = df_channels[df_channels["status"] == "bad"]['name']
-        bad_channels_override = list(bad_channels_override.values)
-        # Put channels.tsv bad channels in data.info['bads']
-        data.info['bads'].sort() 
-        bad_channels_override.sort()
-        # Warning message
-        if data.info['bads'] != bad_channels_override:
-            user_warning_message_channels_override = f'Bad channels from the info of your MEG file are different from ' \
-                                                     f'those in the channels.tsv file. By default, only bad channels from channels.tsv ' \
-                                                     f'are considered as bad: the info of your MEG file is updated with those channels.'
-            warnings.warn(user_warning_message_channels_override)
-            dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_channels_override})
-            data.info['bads'] = bad_channels_override      
+            shutil.copy2(channels_file_override, 'out_dir_resampling/channels.tsv')  # required to run a pipeline on BL        
+            df_channels = pd.read_csv(channels_file_override, sep='\t')
+            # Select bad channels' name
+            bad_channels_override = df_channels[df_channels["status"] == "bad"]['name']
+            bad_channels_override = list(bad_channels_override.values)
+            # Put channels.tsv bad channels in data.info['bads']
+            data.info['bads'].sort() 
+            bad_channels_override.sort()
+            # Warning message
+            if data.info['bads'] != bad_channels_override:
+                user_warning_message_channels_override = f'Bad channels from the info of your MEG file are different from ' \
+                                                         f'those in the channels.tsv file. By default, only bad channels from channels.tsv ' \
+                                                         f'are considered as bad: the info of your MEG file is updated with those channels.'
+                warnings.warn(user_warning_message_channels_override)
+                dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_channels_override})
+                data.info['bads'] = bad_channels_override      
 
     # Read the events file
     events_file_override_exists = False
