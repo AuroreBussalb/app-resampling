@@ -58,11 +58,7 @@ def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad,
         data.load_data()
 
         # Test if events file exist
-        if events_file is not None and param_save_jointly_resampled_events is True:
-
-            # Convert tsv file into a numpy array of integers
-            array_events = np.loadtxt(fname=events_file, delimiter="\t")
-            events = array_events.astype(int)
+        if events_matrix is not None and param_save_jointly_resampled_events is True:
 
             # Resample data
             data_resampled, events = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
@@ -70,13 +66,14 @@ def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad,
                                                    events=events, pad=param_raw_pad)
 
             # Save the events whose onsets were jointly resampled with the data
-            np.savetxt("out_dir_resampling/events.tsv", array_events, delimiter="\t")
+            # np.savetxt("out_dir_resampling/events.tsv", array_events, delimiter="\t")
 
         else:
             # Resample data
             data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
                                            stim_picks=param_stim_picks, n_jobs=param_n_jobs,
                                            events=None, pad=param_raw_pad)
+            events = None
 
     # For epoched data 
     else:
@@ -85,11 +82,12 @@ def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad,
         data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, 
                                        window=param_window, n_jobs=param_n_jobs, 
                                        pad=param_epoch_pad)
+        events = None
 
     # Save file
     data_resampled.save("out_dir_resampling/meg.fif", overwrite=True)
 
-    return data_resampled 
+    return data_resampled, events 
 
 
 def _generate_report(data_file_before, data_before_preprocessing, data_after_preprocessing, bad_channels,
@@ -190,6 +188,8 @@ def main():
 
     ## Read the optional files ##
 
+    # From meg/fif datatype #
+
     # Read the files
     data_file = config.pop('fif')
     if config['param_epoched_data'] is False:
@@ -199,21 +199,12 @@ def main():
 
     # Read the crosstalk file
     cross_talk_file = config.pop('crosstalk')
-    if cross_talk_file is not None:
-        if os.path.exists(cross_talk_file) is True:
-            shutil.copy2(cross_talk_file, 'out_dir_resampling/crosstalk_meg.fif')  # required to run a pipeline on BL
 
     # Read the calibration file
     calibration_file = config.pop('calibration')
-    if calibration_file is not None:
-        if os.path.exists(calibration_file) is True:
-            shutil.copy2(calibration_file, 'out_dir_resampling/calibration_meg.dat')  # required to run a pipeline on BL
 
     # Read destination file 
     destination_file = config.pop('destination')
-    if destination_file is not None:
-        if os.path.exists(destination_file) is True:
-            shutil.copy2(destination_file, 'out_dir_resampling/destination.fif')  # required to run a pipeline on BL
 
     # Read head pos file
     head_pos = config.pop('headshape')
@@ -221,36 +212,31 @@ def main():
         if os.path.exists(head_pos) is True:
             shutil.copy2(head_pos, 'out_dir_resampling/headshape.pos')  # required to run a pipeline on BL
 
-    # Read events file 
+    # Read the events file
     events_file = config.pop('events')
+    events_file_exists = False
+
+    # Test if events file exists
     if events_file is not None:
-        if os.path.exists(events_file) is True:
-            shutil.copy2(events_file, 'out_dir_resampling/events.tsv') # required to run a pipeline on BL
-            ############### TO BE TESTED ON NO RESTING STATE DATA
-            # Compute the events matrix #
-            df_events = pd.read_csv(events_file, sep='\t')
-            
-            # Extract relevant info from df_events
-            samples = df_events['sample'].values
-            event_id = df_events['value'].values
-
-            # Compute the values for events matrix 
-            events_time_in_sample = [raw.first_samp + sample for sample in samples]
-            values_of_trigger_channels = [0]*len(events_time_in_sample)
-
-            # Create a dataframe
-            df_events_matrix = pd.DataFrame([events_time_in_sample, values_of_trigger_channels, event_id])
-            df_events_matrix = df_events_matrix.transpose()
-
-            # Convert dataframe to numpy array
-            events_matrix = df_events_matrix.to_numpy()
+        if os.path.exists(events_file) is False:
+            events_file = None
         else:
-            events_matrix = None
+            events_file_exists = True
+            # Warning: events file must be BIDS compliant  
+            user_warning_message_events = f'The events file provided must be ' \
+                                          f'BIDS compliant.'        
+            warnings.warn(user_warning_message_events)
+            dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_events})
+            # Save events file
+            shutil.copy2(events_file, 'out_dir_resampling/events.tsv')  # required to run a pipeline on BL
+
 
     # Read channels file 
     channels_file = config.pop('channels')
+    channels_file_exists = False
     if channels_file is not None:
         if os.path.exists(channels_file):
+            channels_file_exists = True
             shutil.copy2(channels_file, 'out_dir_resampling/channels.tsv')  # required to run a pipeline on BL
             df_channels = pd.read_csv(channels_file, sep='\t')
             # Select bad channels' name
@@ -267,6 +253,81 @@ def main():
                 warnings.warn(user_warning_message_channels)
                 dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_channels})
                 data.info['bads'] = bad_channels
+
+
+    # From meg/fif-override datatype #  
+
+    # Read channels file
+    if 'channels_override' in config.keys():
+        channels_file_override = config.pop('channels_override')
+        # No need to test if channels_override is None, this key is only present when the app runs on BL    
+        if os.path.exists(channels_file_override) is False:
+            channels_file_override = None
+        else:
+            if channels_file_exists:
+                user_warning_message_channels_file = f"You provided two channels files: by default, the file written by " \
+                                                     f"the App detecting bad channels will be used."
+                warnings.warn(user_warning_message_channels_file)
+                dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_channels_file}) 
+        shutil.copy2(channels_file_override, 'out_dir_resampling/channels.tsv')  # required to run a pipeline on BL        
+        df_channels = pd.read_csv(channels_file_override, sep='\t')
+        # Select bad channels' name
+        bad_channels_override = df_channels[df_channels["status"] == "bad"]['name']
+        bad_channels_override = list(bad_channels_override.values)
+        # Put channels.tsv bad channels in data.info['bads']
+        data.info['bads'].sort() 
+        bad_channels_override.sort()
+        # Warning message
+        if data.info['bads'] != bad_channels_override:
+            user_warning_message_channels_override = f'Bad channels from the info of your MEG file are different from ' \
+                                                     f'those in the channels.tsv file. By default, only bad channels from channels.tsv ' \
+                                                     f'are considered as bad: the info of your MEG file is updated with those channels.'
+            warnings.warn(user_warning_message_channels_override)
+            dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_channels_override})
+            data.info['bads'] = bad_channels_override      
+
+    # Read the events file
+    events_file_override_exists = False
+    if "events_override" in config.keys():
+        events_file = config.pop('events_override')
+        # Test if events file exists
+        if os.path.exists(events_file) is False:
+            events_file = None
+        else:
+            if events_file_exists:
+                user_warning_message_events_file = f"You provided two events files: by default, the file written by " \
+                                                   f"app-get-events will be used."
+                warnings.warn(user_warning_message_events_file)
+                dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_events_file}) 
+
+            events_file_override_exists = True
+            shutil.copy2(events_file, 'out_dir_resampling/events.tsv')  # required to run a pipeline on BL    
+
+    # Extract the matrix of events # 
+    if config['param_epoched_data'] is False:
+        if events_file_override_exists or events_file_exists:
+            ############### TO BE TESTED ON NO RESTING STATE DATA
+            # Compute the events matrix #
+            df_events = pd.read_csv(events_file, sep='\t')
+            
+            # Extract relevant info from df_events
+            samples = df_events['sample'].values
+            event_id = df_events['value'].values
+
+            # Compute the values for events matrix 
+            events_time_in_sample = [data.first_samp + sample for sample in samples]
+            values_of_trigger_channels = [0]*len(events_time_in_sample)
+
+            # Create a dataframe
+            df_events_matrix = pd.DataFrame([events_time_in_sample, values_of_trigger_channels, event_id])
+            df_events_matrix = df_events_matrix.transpose()
+
+            # Convert dataframe to numpy array
+            events_matrix = df_events_matrix.to_numpy()
+        if events_file_override_exists is False and events_file_exists is False:
+            events_matrix = None  
+    else:
+        events_matrix = None               
         
     
     # Info message about resampling if applied
@@ -326,8 +387,36 @@ def main():
 
     # Apply resampling
     data_copy = data.copy()
-    data_resampled = resampling(data_copy, events_matrix, **kwargs)
+    data_resampled, events = resampling(data_copy, events_matrix, **kwargs)
     del data_copy
+
+    ## Create BIDS compliant events file if existed ## 
+    if events is not None and config['param_epoched_data'] is True:
+        # Create a BIDSPath
+        bids_path = BIDSPath(subject='subject',
+                             session=None,
+                             task='task',
+                             run='01',
+                             acquisition=None,
+                             processing=None,
+                             recording=None,
+                             space=None,
+                             suffix=None,
+                             datatype='meg',
+                             root='bids')
+
+        # Create event_id 
+        former_events, dict_events_id = mne.read_events(data_file, return_event_id=True) # to be tested
+
+        # Write BIDS to create events.tsv BIDS compliant
+        write_raw_bids(raw, bids_path, events_data=events, event_id=dict_event_id, overwrite=True)
+
+        # Extract events.tsv from bids path
+        events_file = 'bids/sub-subject/meg/sub-subject_task-task_run-01_events.tsv'
+
+        # Copy events.tsv in outdir
+        shutil.copy2(events_file, 'out_dir_resampling/events.tsv') 
+
 
     # Success message in product.json    
     dict_json_product['brainlife'].append({'type': 'success', 'msg': 'Data was successfully resampled.'})
