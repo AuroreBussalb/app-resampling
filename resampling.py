@@ -345,7 +345,7 @@ def main():
         shutil.copy2(events_file, 'out_dir_resampling/events.tsv') 
 
         # Info message in product.json
-        dict_json_product['brainlife'].append({'type': 'infs', 'msg': 'Jointly resampled events are saved in events.tsv.'})
+        dict_json_product['brainlife'].append({'type': 'info', 'msg': 'Jointly resampled events are saved in events.tsv.'})
 
 
     # Success message in product.json    
