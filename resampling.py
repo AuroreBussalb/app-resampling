@@ -8,6 +8,7 @@ import os
 import shutil
 import pandas as pd
 from mne_bids import BIDSPath, write_raw_bids
+from collections import Counter
 
 
 def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad, param_window,
@@ -91,92 +92,6 @@ def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad,
     return data_resampled, events_resampled
 
 
-def _generate_report(data_file_before, data_before_preprocessing, data_after_preprocessing, bad_channels,
-                     cresample_sfreq):
-    # Generate a report
-
-    # Instance of mne.Report
-    report = mne.Report(title='Results of resampling', verbose=True)
-
-    # Plot MEG signals in temporal domain
-    fig_data = data_before_preprocessing.pick(['meg'], exclude='bads').plot(duration=10, scalings='auto', butterfly=False,
-                                                                            show_scrollbars=False, proj=False)
-    fig_data_resampled = data_after_preprocessing.pick(['meg'], exclude='bads').plot(duration=10, scalings='auto',
-                                                                                     butterfly=False,
-                                                                                     show_scrollbars=False, proj=False)
-
-    # Plot power spectral density
-    fig_data_psd = data_before_preprocessing.plot_psd()
-    fig_data_maxfilter_psd = data_after_preprocessing.plot_psd()
-
-    # Add figures to report
-    report.add_figs_to_section(fig_data, captions='MEG signals before filtering', section='Temporal domain')
-    report.add_figs_to_section(fig_raw_maxfilter, captions='MEG signals after filtering',
-                               comments=comments_about_filtering,
-                               section='Temporal domain')
-    report.add_figs_to_section(fig_raw_psd, captions='Power spectral density before filtering',
-                               section='Frequency domain')
-    report.add_figs_to_section(fig_raw_maxfilter_psd, captions='Power spectral density after filtering',
-                               comments=comments_about_filtering,
-                               section='Frequency domain')
-
-    # Check if MaxFilter was already applied on the data
-    if raw_before_preprocessing.info['proc_history']:
-        sss_info = raw_before_preprocessing.info['proc_history'][0]['max_info']['sss_info']
-        tsss_info = raw_before_preprocessing.info['proc_history'][0]['max_info']['max_st']
-        if bool(sss_info) or bool(tsss_info) is True:
-            message_channels = f'Bad channels have been interpolated during MaxFilter'
-        else:
-            message_channels = bad_channels
-    else:
-        message_channels = bad_channels
-
-    # Put this info in html format
-    # Give some info about the file before preprocessing
-    sampling_frequency = raw_before_preprocessing.info['sfreq']
-    highpass = raw_before_preprocessing.info['highpass']
-    lowpass = raw_before_preprocessing.info['lowpass']
-
-    # Put this info in html format
-    # Info on data
-    html_text_info = f"""<html>
-
-        <head>
-            <style type="text/css">
-                table {{ border-collapse: collapse;}}
-                td {{ text-align: center; border: 1px solid #000000; border-style: dashed; font-size: 15px; }}
-            </style>
-        </head>
-
-        <body>
-            <table width="50%" height="80%" border="2px">
-                <tr>
-                    <td>Input file: {data_file_before}</td>
-                </tr>
-                <tr>
-                    <td>Bad channels: {message_channels}</td>
-                </tr>
-                <tr>
-                    <td>Sampling frequency before resampling: {sampling_frequency}Hz</td>
-                </tr>
-                <tr>
-                    <td>Highpass: {highpass}Hz</td>
-                </tr>
-                <tr>
-                    <td>Lowpass {lowpass}Hz</td>
-                </tr>
-            </table>
-        </body>
-
-        </html>"""
-
-    # Add html to reports
-    report.add_htmls_to_section(html_text_info, captions='MEG recording features', section='Data info', replace=False)
-
-    # Save report
-    report.save('out_dir_report/report_filtering.html', overwrite=True)
-
-
 def main():
 
     # Generate a json.product to display messages on Brainlife UI
@@ -230,6 +145,8 @@ def main():
             dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_events})
             # Save events file
             shutil.copy2(events_file, 'out_dir_resampling/events.tsv')  # required to run a pipeline on BL
+                                                                        # if param_save_jointly_resampled_events is True
+                                                                        # it will be overwritten 
 
 
     # Read channels file 
@@ -302,7 +219,10 @@ def main():
                 dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_events_file}) 
 
             events_file_override_exists = True
-            shutil.copy2(events_file, 'out_dir_resampling/events.tsv')  # required to run a pipeline on BL    
+            shutil.copy2(events_file, 'out_dir_resampling/events.tsv')  # required to run a pipeline on BL
+                                                                        # this events file is not resampled  
+                                                                        # if param_save_jointly_resampled_events is True
+                                                                        # it will be overwritten  
 
     # Extract the matrix of events # 
     if config['param_epoched_data'] is False:
@@ -392,7 +312,7 @@ def main():
     del data_copy
 
     ## Create BIDS compliant events file if existed ## 
-    if events_resampled is not None and config['param_epoched_data'] is True:
+    if events_resampled is not None and config['param_epoched_data'] is False:
         # Create a BIDSPath
         bids_path = BIDSPath(subject='subject',
                              session=None,
@@ -406,11 +326,17 @@ def main():
                              datatype='meg',
                              root='bids')
 
-        # Create event_id 
-        former_events, dict_events_id = mne.read_events(data_file, return_event_id=True) # to be tested
+        # Extract event_id value #
+        # to be tested when events are extracted from data
+        event_id_value = list(events_resampled[:, 2])  # the third column of events corresponds to the value column of BIDS events.tsv
+        id_values_occurrences = Counter(event_id_value)  # number of different events
+        id_values_occurrences = list(id_values_occurrences.keys())
+        trials_type = [f"events_{i}" for i in range(1, len(id_values_occurrences) + 1)]  # for trial type column of BIDS events.tsv 
+        dict_event_id = dict((k, v) for k, v  in zip(trials_type, id_values_occurrences))
+
 
         # Write BIDS to create events.tsv BIDS compliant
-        write_raw_bids(raw, bids_path, events_data=events_resampled, event_id=dict_event_id, overwrite=True)
+        write_raw_bids(data, bids_path, events_data=events_resampled, event_id=dict_event_id, overwrite=True)
 
         # Extract events.tsv from bids path
         events_file = 'bids/sub-subject/meg/sub-subject_task-task_run-01_events.tsv'
@@ -418,12 +344,13 @@ def main():
         # Copy events.tsv in outdir
         shutil.copy2(events_file, 'out_dir_resampling/events.tsv') 
 
+        # Info message in product.json
+        dict_json_product['brainlife'].append({'type': 'infs', 'msg': 'Jointly resampled events are saved in events.tsv.'})
+
 
     # Success message in product.json    
     dict_json_product['brainlife'].append({'type': 'success', 'msg': 'Data was successfully resampled.'})
 
-    # Generate a report
-    # _generate_report(data_file, data, data_resampled, bad_channels, comments_resample_freq)
 
     # Save the dict_json_product in a json file
     with open('product.json', 'w') as outfile:
