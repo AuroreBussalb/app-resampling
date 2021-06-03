@@ -102,11 +102,6 @@ def main():
     with open('config.json') as config_json:
         config = json.load(config_json)
 
-
-    # ## Read the optional files ##
-
-    # # From meg/fif datatype #
-
     # Read the files
     data_file = config.pop('fif')
     if config['param_epoched_data'] is False:
@@ -320,12 +315,17 @@ def main():
     # Keep bad channels in memory
     bad_channels = data.info['bads']
 
+
+    # Define the type of data
+    data = data.pick(picks=config['param_pick_type'])
+
     
     ## Define kwargs ##
 
     # Delete keys values in config.json when this app is executed on Brainlife
     # if '_app' and '_tid' and '_inputs' and '_outputs' in config.keys():
     #     del config['_app'], config['_tid'], config['_inputs'], config['_outputs'] 
+    del config['param_pick_type']
     config = helper.define_kwargs(config)
 
     kwargs = config  

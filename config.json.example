@@ -1,11 +1,11 @@
 {
-    "fif": "/network/lustre/iss01/home/aurore.bussalb/Repositories/app-bad-channels/out_dir_bad_channels/meg.fif",
+    "fif": "/network/lustre/iss01/home/aurore.bussalb/Repositories/data_test_BL/rest2-raw.fif",
 	"calibration": "/network/lustre/iss01/home/aurore.bussalb/Repositories/data_test_BL/sss_cal.dat",
     "crosstalk": "/network/lustre/iss01/home/aurore.bussalb/Repositories/data_test_BL/ct_sparse.fif",
     "headshape": null,
     "destination": null,
 	"channels": null,
-	"events": "/network/lustre/iss01/home/aurore.bussalb/Repositories/app-create-events/out_dir_create_events/events.tsv",
+	"events": "/network/lustre/iss01/home/aurore.bussalb/Repositories/app-create-events/out_dir_get_events/events.tsv",
 	"param_epoched_data": false,
 	"param_sfreq": 512,
 	"param_npad": "auto",
@@ -14,5 +14,6 @@
 	"param_n_jobs": 1,
 	"param_raw_pad": "reflect_limited",
 	"param_epoch_pad": "edge",
-	"param_save_jointly_resampled_events": false
+	"param_save_jointly_resampled_events": true,
+        "param_pick_type": "eeg" 
 }
