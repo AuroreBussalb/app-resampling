@@ -1,6 +1,6 @@
 # app-resampling
 
-This is a draft of a future Brainlife App that resamples MEG signals using the MNE functions:  
+This is a draft of a future Brainlife App that resamples MEG signals using the MNE functions: 
 [`mne.io.Raw.resample`](https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.resample) or 
 [`mne.Epochs.resample`](https://mne.tools/stable/generated/mne.Epochs.html?highlight=mne%20epochs#mne.Epochs.resample).
 
@@ -13,7 +13,8 @@ This is a draft of a future Brainlife App that resamples MEG signals using the M
     * an optional crosstalk compensation file in `.fif`,
     * an optional head position file in `.pos`,
     * an optional destination file in `.fif`,
-    * an optional event file in `.tsv`.
+    * an optional events file in `.tsv`,
+    * an optional channels file in `.tsv`.
 3) Input parameters are:
     * param_epoched_data: `bool`, if True, the data to be resampled is epoched, else it is continuous.
     * param_sfreq: `float`, new sample rate to use.
@@ -26,11 +27,11 @@ This is a draft of a future Brainlife App that resamples MEG signals using the M
     * param_save_jointly_resampled_events: `bool`, if True, save the events file resampled jointly with the data. Default is True.
     * param_pick_type: `str` or `None`, select meg or eeg channels. If `None` all channels are selected. Default is `None`.
 
-This list along with the parameters' default values correspond to the 0.22.0 version of MNE Python.  
+This list along with the parameters' default values correspond to the 0.22.0 version of MNE Python. 
 
 5) Ouput files are:
     * a `.fif` MEG file after resampling,
-    * an `.html` report containing figures.
+    * an optional `.tsv` events file with the resampled events.
 
 ### Authors
 - [Aurore Bussalb](aurore.bussalb@icm-institute.org)
@@ -50,6 +51,7 @@ brainlife.io is publicly funded and for the sustainability of the project it is 
 
 ### Citations
 1. Avesani, P., McPherson, B., Hayashi, S. et al. The open diffusion data derivatives, brain data upcycling via integrated publishing of derivatives and reproducible open cloud services. Sci Data 6, 69 (2019). [https://doi.org/10.1038/s41597-019-0073-y](https://doi.org/10.1038/s41597-019-0073-y)
+2. Appelhoff, S., Sanderson, M., Brooks, T., Vliet, M., Quentin, R., Holdgraf, C., Chaumon, M., Mikulan, E., Tavabi, K., Höchenberger, R., Welke, D., Brunner, C., Rockhill, A., Larson, E., Gramfort, A., & Jas, M. MNE-BIDS: Organizing electrophysiological data into the BIDS format and facilitating their analysis. Journal of Open Source Software, 4:1896 (2019). [https://doi.org/10.21105/joss.01896](https://doi.org/10.21105/joss.01896)
 
 ## Running the App 
 
@@ -77,5 +79,5 @@ This App has not yet been registered in Brainlife.io.
 
 ## Output
 
-The output files are a MEG file in `.fif` format and an `.html` report.
+The output files are a MEG file in `.fif` format and an optional `.tsv` events file.
 
