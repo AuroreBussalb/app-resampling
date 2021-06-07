@@ -67,10 +67,6 @@ def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad,
             data_resampled, events_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
                                                              stim_picks=param_stim_picks, n_jobs=param_n_jobs,
                                                              events=events_matrix, pad=param_raw_pad)
-
-            # Save the events whose onsets were jointly resampled with the data
-            # np.savetxt("out_dir_resampling/events.tsv", array_events, delimiter="\t")
-
         else:
             # Resample data
             data_resampled = data.resample(sfreq=param_sfreq, npad=param_npad, window=param_window,
@@ -109,118 +105,10 @@ def main():
     else:
         data = mne.read_epochs(data_file)
 
-    # # Read the crosstalk file
-    # cross_talk_file = config.pop('crosstalk')
-
-    # # Read the calibration file
-    # calibration_file = config.pop('calibration')
-
-    # # Read destination file 
-    # destination_file = config.pop('destination')
-
-    # # Read head pos file
-    # head_pos = config.pop('headshape')
-    # if head_pos is not None:
-    #     if os.path.exists(head_pos) is True:
-    #         shutil.copy2(head_pos, 'out_dir_resampling/headshape.pos')  # required to run a pipeline on BL
-
-    # # Read the events file
-    # events_file = config.pop('events')
-    # events_file_exists = False
-
-    # # Test if events file exists
-    # if events_file is not None:
-    #     if os.path.exists(events_file) is False:
-    #         events_file = None
-    #     else:
-    #         events_file_exists = True
-    #         # Warning: events file must be BIDS compliant  
-    #         user_warning_message_events = f'The events file provided must be ' \
-    #                                       f'BIDS compliant.'        
-    #         warnings.warn(user_warning_message_events)
-    #         dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_events})
-    #         # Save events file
-    #         shutil.copy2(events_file, 'out_dir_resampling/events.tsv')  # required to run a pipeline on BL
-    #                                                                     # if param_save_jointly_resampled_events is True
-    #                                                                     # it will be overwritten 
-
-
-    # # Read channels file 
-    # channels_file = config.pop('channels')
-    # channels_file_exists = False
-    # if channels_file is not None:
-    #     if os.path.exists(channels_file):
-    #         channels_file_exists = True
-    #         shutil.copy2(channels_file, 'out_dir_resampling/channels.tsv')  # required to run a pipeline on BL
-    #         df_channels = pd.read_csv(channels_file, sep='\t')
-    #         # Select bad channels' name
-    #         bad_channels = df_channels[df_channels["status"] == "bad"]['name']
-    #         bad_channels = list(bad_channels.values)
-    #         # Put channels.tsv bad channels in data.info['bads']
-    #         data.info['bads'].sort() 
-    #         bad_channels.sort()
-    #         # Warning message
-    #         if data.info['bads'] != bad_channels:
-    #             user_warning_message_channels = f'Bad channels from the info of your data file are different from ' \
-    #                                             f'those in the channels.tsv file. By default, only bad channels from channels.tsv ' \
-    #                                             f'are considered as bad: the info of your data file is updated with those channels.'
-    #             warnings.warn(user_warning_message_channels)
-    #             dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_channels})
-    #             data.info['bads'] = bad_channels
-
-
-    # # From meg/fif-override datatype #  
-
-    # # Read channels file
-    # if 'channels_override' in config.keys():
-    #     channels_file_override = config.pop('channels_override')
-    #     # No need to test if channels_override is None, this key is only present when the app runs on BL    
-    #     if os.path.exists(channels_file_override) is False:
-    #         channels_file_override = None
-    #     else:
-    #         if channels_file_exists:
-    #             user_warning_message_channels_file = f"You provided two channels files: by default, the file written by " \
-    #                                                  f"the App detecting bad channels will be used."
-    #             warnings.warn(user_warning_message_channels_file)
-    #             dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_channels_file}) 
-    #         shutil.copy2(channels_file_override, 'out_dir_resampling/channels.tsv')  # required to run a pipeline on BL        
-    #         df_channels = pd.read_csv(channels_file_override, sep='\t')
-    #         # Select bad channels' name
-    #         bad_channels_override = df_channels[df_channels["status"] == "bad"]['name']
-    #         bad_channels_override = list(bad_channels_override.values)
-    #         # Put channels.tsv bad channels in data.info['bads']
-    #         data.info['bads'].sort() 
-    #         bad_channels_override.sort()
-    #         # Warning message
-    #         if data.info['bads'] != bad_channels_override:
-    #             user_warning_message_channels_override = f'Bad channels from the info of your MEG file are different from ' \
-    #                                                      f'those in the channels.tsv file. By default, only bad channels from channels.tsv ' \
-    #                                                      f'are considered as bad: the info of your MEG file is updated with those channels.'
-    #             warnings.warn(user_warning_message_channels_override)
-    #             dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_channels_override})
-    #             data.info['bads'] = bad_channels_override      
-
-    # # Read the events file
-    # events_file_override_exists = False
-    # if "events_override" in config.keys():
-    #     events_file = config.pop('events_override')
-    #     # Test if events file exists
-    #     if os.path.exists(events_file) is False:
-    #         events_file = None
-    #     else:
-    #         if events_file_exists:
-    #             user_warning_message_events_file = f"You provided two events files: by default, the file written by " \
-    #                                                f"app-get-events will be used."
-    #             warnings.warn(user_warning_message_events_file)
-    #             dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_events_file}) 
-
-    #         events_file_override_exists = True
-    #         shutil.copy2(events_file, 'out_dir_resampling/events.tsv')  # required to run a pipeline on BL
-    #                                                                     # this events file is not resampled  
-    #                                                                     # if param_save_jointly_resampled_events is True
-    #                                                                     # it will be overwritten  
-
+    # Read and save optional files
     config, cross_talk_file, calibration_file, events_file, head_pos_file, channels_file, destination = helper.read_optional_files(config, 'out_dir_resampling')
+    
+    # Convert empty strings values to None
     config = helper.convert_parameters_to_None(config)
 
     # Channels.tsv must be BIDS compliant
@@ -229,7 +117,7 @@ def main():
                                         f'BIDS compliant and the column "status" must be present. ' 
         warnings.warn(user_warning_message_channels)
         dict_json_product['brainlife'].append({'type': 'warning', 'msg': user_warning_message_channels})
-
+        # Udpate raw.info['bads'] with info contained in channels.tsv
         raw, user_warning_message_channels = helper.update_data_info_bads(raw, channels_file)
         if user_warning_message_channels is not None: 
             warnings.warn(user_warning_message_channels)
@@ -280,10 +168,6 @@ def main():
     # Comment about resampling
     comments_resample_freq = f'{config["param_sfreq"]}Hz'
 
-    # Convert all "" into None when the App runs on BL
-    # tmp = dict((k, None) for k, v in config.items() if v == "")
-    # config.update(tmp)
-
     # Check if the user will save an empty events file 
     if events_file is None and config['param_save_jointly_resampled_events'] is True:
         value_error_message = f'You cannot save en empty events file. ' \
@@ -319,16 +203,9 @@ def main():
     # Define the type of data
     data = data.pick(picks=config['param_pick_type'])
 
-    
-    ## Define kwargs ##
-
     # Delete keys values in config.json when this app is executed on Brainlife
-    # if '_app' and '_tid' and '_inputs' and '_outputs' in config.keys():
-    #     del config['_app'], config['_tid'], config['_inputs'], config['_outputs'] 
     del config['param_pick_type']
-    config = helper.define_kwargs(config)
-
-    kwargs = config  
+    kwargs = helper.define_kwargs(config)
 
     # Apply resampling
     data_copy = data.copy()
