@@ -9,7 +9,7 @@ import shutil
 import pandas as pd
 from mne_bids import BIDSPath, write_raw_bids
 from collections import Counter
-import helper
+from brainlife_apps_helper import helper
 
 
 def resampling(data, events_matrix, param_epoched_data, param_sfreq, param_npad, param_window,
